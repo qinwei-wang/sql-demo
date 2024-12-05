@@ -56,6 +56,17 @@
                     {{ $results->appends(['sql' => request('sql', '')])->links() }}
                 </div>
             @endif
+            <!-- 导出按钮 -->
+            <div class="mt-4 flex space-x-4">
+                <!-- 导出 Excel 表单 -->
+                <form action="{{ route('dev.exportExcel') }}" method="POST">
+                    @csrf
+                    <!-- 隐藏 SQL 字段 -->
+                    <input type="hidden" name="sql" value="{{ request('sql') }}">
+                    <input type="hidden" name="page" value="{{ request('page',1) }}">
+                    <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Export Excel</button>
+                </form>
+            </div>
         @endif
     </div>
 </x-app-layout>

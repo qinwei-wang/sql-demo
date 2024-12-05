@@ -2,8 +2,10 @@
 
 namespace App\Http\Services;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Pagination\LengthAwarePaginator;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\SQLResultsExport;
 use App\Models\SQLLog;
+use Illuminate\Pagination\LengthAwarePaginator;
 class DevService
 {
     /**
@@ -55,14 +57,53 @@ class DevService
         }
     }
 
-    public function exportExcel() {
-        return null;
+    /**
+     * @param $sql
+     * @param $page
+     * @param $pageSize
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function exportExcel($sql, $page = 1, $pageSize = 10) {
+        // 去除空格分号
+        $sql = $this->trim($sql);
+
+        // 校验
+        if ($this->validate($sql)) {
+            return back()->withErrors('Only SELECT queries are allowed.');
+        }
+
+        // // 执行 SQL 查询
+        try {
+            $results = $this->executeSql($sql, $page, $pageSize);
+
+            // 记录 SQL 执行日志
+            SQLLog::create([
+                'user_id' => auth()->id(),
+                'sql' => $sql,
+                'error' => null,
+            ]);
+
+            // 导出为 Excel 文件
+            return Excel::download(new SQLResultsExport($results), 'results.xlsx');
+        } catch (\Exception $e) {
+            // 如果 SQL 执行失败，记录错误并返回
+            SQLLog::create([
+                'user_id' => auth()->id(),
+                'sql' => $sql,
+                'error' => $e->getMessage(),
+            ]);
+            return back()->withErrors('SQL Error: ' . $e->getMessage());
+        }
     }
 
     public function exportJson() {
         return null;
     }
 
+    /**
+     * @param $sql
+     * @return string
+     */
     private function trim($sql) {
         // 去除两端的空格
         $sql = trim($sql);
@@ -72,9 +113,16 @@ class DevService
         return $sql;
     }
 
-    private function executeSqlPaginator($sql, $page = 1, $pageSize = 10) {
-        // 执行 SQL 查询
-        $results = DB::select($sql);
+    /**
+     * @param $sql
+     * @param $page
+     * @param $pageSize
+     * @return LengthAwarePaginator
+     */
+    private function executeSqlPaginator($sql, $page = 1, $pageSize = 10)
+    {
+        $results = $this->executeSql($sql, $page, $pageSize);
+
         // 获取总数
         $countQuery = "SELECT COUNT(*) AS total FROM (" . $sql . ") AS total_query";
         $totalResults = DB::select($countQuery);
@@ -85,14 +133,39 @@ class DevService
 
         // 使用 Laravel 的 LengthAwarePaginator 进行分页处理
         return new LengthAwarePaginator(
-            $resultsCollection,
-            $totalCount,
-            $pageSize,
-            $page,
-            ['path' => url()->current()]
+            $resultsCollection,  // 当前页的数据
+            $totalCount,         // 总数据条数
+            $pageSize,            // 每页显示条数
+            $page,               // 当前页
+            ['path' => url()->current()] // 分页链接的基础路径
         );
     }
 
+    /**
+     * @param $sql
+     * @param $page
+     * @param $pageSize
+     * @return array
+     */
+    private function executeSql($sql, $page = 1, $pageSize = 10)
+    {
+        if (! $this->isContainsLimit($sql)) {
+            // 构造分页 SQL 查询
+            $offset = ($page - 1) * $pageSize;
+            $sql = $sql . " LIMIT $pageSize OFFSET $offset";
+        }
+
+        // 执行 SQL 查询
+        $results = DB::select($sql);
+
+        return $results;
+
+    }
+
+    /**
+     * @param $sql
+     * @return bool
+     */
     private function validate($sql) {
         // 禁止其它危险操作
         $dangerousKeywords = ['INSERT', 'UPDATE', 'DELETE', 'DROP', 'TRUNCATE', 'ALTER'];
@@ -103,5 +176,14 @@ class DevService
         }
 
         return  stripos($sql, 'SELECT') === false;
+    }
+
+    /**
+     * @param $sql
+     * @return bool
+     */
+    private function isContainsLimit($sql)
+    {
+        return stripos($sql, 'LIMIT') !== false;
     }
 }

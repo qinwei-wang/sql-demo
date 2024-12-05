@@ -30,5 +30,6 @@ Route::middleware('auth')->group(function () {
 });
 
 Route::middleware(['auth', 'role:admin'])->match(['get', 'post'], '/dev', [DevController::class, 'index'])->name('dev');
+Route::middleware(['auth', 'role:admin'])->post('/dev/exportExcel', [DevController::class, 'exportExcel'])->name('dev.exportExcel');
 
 require __DIR__.'/auth.php';

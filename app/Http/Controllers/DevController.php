@@ -25,7 +25,9 @@ class DevController extends Controller
     }
 
     public function exportExcel(Request $request) {
-        return $this->devService->exportExcel();
+        $sql = $request->input('sql');
+        $page = $request->input("page", 1);
+        return $this->devService->exportExcel($sql, $page);
     }
 
     public function exportJson(Request $request) {
