@@ -16,7 +16,7 @@ use App\Http\Controllers\DevController;
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    return redirect('/dev');
 });
 
 Route::get('/dashboard', function () {
@@ -29,7 +29,11 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
+// sql查询
 Route::middleware(['auth', 'role:admin'])->match(['get', 'post'], '/dev', [DevController::class, 'index'])->name('dev');
+// sql导出excel
 Route::middleware(['auth', 'role:admin'])->post('/dev/exportExcel', [DevController::class, 'exportExcel'])->name('dev.exportExcel');
+// sql导出json
+Route::middleware(['auth', 'role:admin'])->post('/dev/exportJson', [DevController::class, 'exportJson'])->name('dev.exportJson');
 
 require __DIR__.'/auth.php';

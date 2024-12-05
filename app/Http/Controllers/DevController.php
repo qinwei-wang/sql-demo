@@ -31,6 +31,8 @@ class DevController extends Controller
     }
 
     public function exportJson(Request $request) {
-        return $this->devService->exportJson();
+        $sql = $request->input('sql');
+        $page = $request->input("page", 1);
+        return $this->devService->exportJson($sql, $page);
     }
 }

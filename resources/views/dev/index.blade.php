@@ -14,7 +14,11 @@
         <div class="mb-6">
             <form action="{{ route('dev') }}" method="POST">
                 @csrf
-                <textarea name="sql" class="w-full h-32 p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter your SQL query here...">{{ request('sql', '') }}</textarea>
+                <textarea name="sql" class="w-full h-32 p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter your SQL query here...
+                例子1:xxxx;
+                例子2:select * from update;
+                例子3:select * from users;
+                例子四:select * from users limit 1;">{{ request('sql', '') }}</textarea>
                 <div class="mt-4 flex justify-between">
                     <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Execute</button>
                 </div>
@@ -32,24 +36,26 @@
                 </div>
             @else
                 <!-- 显示查询结果表格 -->
-                <table class="min-w-full bg-white border border-gray-200 rounded-lg shadow-md">
-                    <thead>
-                    <tr class="bg-gray-100">
-                        @foreach(array_keys((array) $results->first()) as $column)
-                            <th class="py-2 px-4 border-b text-left text-gray-700">{{ ucfirst($column) }}</th>
-                        @endforeach
-                    </tr>
-                    </thead>
-                    <tbody>
-                    @foreach($results as $row)
-                        <tr>
-                            @foreach((array) $row as $column)
-                                <td class="py-2 px-4 border-b text-gray-600">{{ $column }}</td>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full bg-white border border-gray-200 rounded-lg shadow-md">
+                        <thead>
+                        <tr class="bg-gray-100">
+                            @foreach(array_keys((array) $results->first()) as $column)
+                                <th class="py-2 px-4 border-b text-left text-gray-700">{{ ucfirst($column) }}</th>
                             @endforeach
                         </tr>
-                    @endforeach
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                        @foreach($results as $row)
+                            <tr>
+                                @foreach((array) $row as $column)
+                                    <td class="py-2 px-4 border-b text-gray-600">{{ $column }}</td>
+                                @endforeach
+                            </tr>
+                        @endforeach
+                        </tbody>
+                    </table>
+                </div>
 
                 <!-- 分页链接 -->
                 <div class="mt-4">
@@ -65,6 +71,15 @@
                     <input type="hidden" name="sql" value="{{ request('sql') }}">
                     <input type="hidden" name="page" value="{{ request('page',1) }}">
                     <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Export Excel</button>
+                </form>
+
+                <!-- 导出 JSON 表单 -->
+                <form action="{{ route('dev.exportJson') }}" method="POST">
+                    @csrf
+                    <!-- 隐藏 SQL 字段 -->
+                    <input type="hidden" name="sql" value="{{ request('sql') }}">
+                    <input type="hidden" name="page" value="{{ request('page', 1) }}">
+                    <button type="submit" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">Export JSON</button>
                 </form>
             </div>
         @endif

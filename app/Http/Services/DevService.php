@@ -96,8 +96,44 @@ class DevService
         }
     }
 
-    public function exportJson() {
-        return null;
+    /**
+     * @param $sql
+     * @param $page
+     * @param $pageSize
+     * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\RedirectResponse
+     */
+    public function exportJson($sql, $page = 1, $pageSize = 10)
+    {
+        // 去除空格分号
+        $sql = $this->trim($sql);
+
+        // 校验
+        if ($this->validate($sql)) {
+            return back()->withErrors('Only SELECT queries are allowed.');
+        }
+
+        // 执行 SQL 查询
+        try {
+            $results = $this->executeSql($sql, $page, $pageSize);
+
+            // 记录 SQL 执行日志
+            SQLLog::create([
+                'user_id' => auth()->id(),
+                'sql' => $sql,
+                'error' => null,
+            ]);
+
+            // 返回 JSON 格式的结果
+            return response()->json($results);
+        } catch (\Exception $e) {
+            // 如果 SQL 执行失败，记录错误并返回
+            SQLLog::create([
+                'user_id' => auth()->id(),
+                'sql' => $sql,
+                'error' => $e->getMessage(),
+            ]);
+            return back()->withErrors('SQL Error: ' . $e->getMessage());
+        }
     }
 
     /**
