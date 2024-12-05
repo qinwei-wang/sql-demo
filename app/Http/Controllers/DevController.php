@@ -13,9 +13,15 @@ class DevController extends Controller
     {
         $this->devService = $devService;
     }
-    //
+
+    /**
+     * @param Request $request
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Foundation\Application
+     */
     public function index(Request $request) {
-        return $this->devService->execute();
+        $sql = $request->input('sql');
+        $page = $request->input("page", 1);
+        return $this->devService->execute($sql, $page);
     }
 
     public function exportExcel(Request $request) {
