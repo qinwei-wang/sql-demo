@@ -78,12 +78,12 @@ class DevService
             $results = $this->executeSql($sql, $page, $pageSize);
 
             // 记录 SQL 执行日志
-            $this->sqlLogService->save($sql);
+//            $this->sqlLogService->save($sql);
 
             // 导出为 Excel 文件
             return Excel::download(new SQLResultsExport($results), 'results.xlsx');
         } catch (\Exception $e) {
-            $this->sqlLogService->save($sql, $e->getMessage());
+//            $this->sqlLogService->save($sql, $e->getMessage());
             return back()->withErrors('SQL Error: ' . $e->getMessage());
         }
     }
@@ -112,12 +112,12 @@ class DevService
             $results = $this->executeSql($sql, $page, $pageSize);
 
             // 记录 SQL 执行日志
-            $this->sqlLogService->save($sql);
+//            $this->sqlLogService->save($sql);
 
             // 返回 JSON 格式的查询结果
             return response()->json($results);
         } catch (\Exception $e) {
-            $this->sqlLogService->save($sql, $e->getMessage());
+//            $this->sqlLogService->save($sql, $e->getMessage());
             return back()->withErrors('SQL Error: ' . $e->getMessage());
         }
     }
