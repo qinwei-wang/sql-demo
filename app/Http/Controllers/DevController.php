@@ -23,7 +23,7 @@ class DevController extends Controller
      * @return \Illuminate\Contracts\View\View|\Illuminate\View\View
      */
     public function index(Request $request) {
-        $sql = $request->input('sql', '');
+        $sql = $request->input('sql', '') ?? "";
         $page = $request->input("page", 1);
         return $this->devService->execute($sql, $page);
     }
@@ -34,7 +34,7 @@ class DevController extends Controller
      * @return \Illuminate\Http\RedirectResponse
      */
     public function exportExcel(Request $request) {
-        $sql = $request->input('sql', '');
+        $sql = $request->input('sql', '')  ?? "";
         $page = $request->input("page", 1);
         return $this->devService->exportExcel($sql, $page);
     }
@@ -45,7 +45,7 @@ class DevController extends Controller
      * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\RedirectResponse
      */
     public function exportJson(Request $request) {
-        $sql = $request->input('sql', '');
+        $sql = $request->input('sql', '')  ?? "";
         $page = $request->input("page", 1);
         return $this->devService->exportJson($sql, $page);
     }

@@ -3,13 +3,14 @@
 namespace App\Http\Services;
 
 use Illuminate\Support\Facades\DB;
+use Illuminate\View\View;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\SQLResultsExport;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 class DevService
 {
-    private $sqlLogService;
+    private SQLLogService $sqlLogService;
 
     public function __construct(SQLLogService $sqlLogService)
     {
@@ -24,7 +25,7 @@ class DevService
      * @param int $pageSize
      * @return \Illuminate\Contracts\View\View
      */
-    public function execute(string $sql, int $page = 1, int $pageSize = 10): \Illuminate\Contracts\View\View|\Illuminate\View\View
+    public function execute(string $sql, int $page = 1, int $pageSize = 10): \Illuminate\Contracts\View\View|View
     {
         // 去除 SQL 语句两端的空格和末尾的分号
         $sql = $this->trimSql($sql);
@@ -224,9 +225,9 @@ class DevService
      *
      * @param $results
      * @param string|null $error
-     * @return \Illuminate\View\View
+     * @return View
      */
-    private function renderDevPage($results, string $error = null): \Illuminate\View\View
+    private function renderDevPage($results, string $error = null): View
     {
         $data = [];
         $data['results'] = $results;
